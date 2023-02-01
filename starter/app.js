@@ -18,9 +18,11 @@ app.get('/tours', (req, res) => {
 // GET specific
 app.get('/tours/:id', (req, res) => {
    console.log(req.params)
-   res.status(200).json({
-      status: 'success!'
-   })
+   // Convert id param into a number
+   const id = req.params.id * 1
+   const tour = tours.find(el => el.id === id)
+
+   res.status(200).json({ tour })
 })
 
 // POST request
@@ -33,13 +35,10 @@ app.post('/tours', (req, res) => {
    tours.push(newTour)
 
    // Final step to write in the file to persist
-   fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`, JSON.stringify(tours), err => {
-      res.status(201).json({
-         status: 'success',
-         data: {
-            tour: newTour
-         }
-      })
+   fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`,
+    JSON.stringify(tours),
+    err => {
+      res.status(201).json({ newTour })
    })
 })
 
