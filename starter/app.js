@@ -1,49 +1,43 @@
-// import express module
+// Step 1: Import express module
 const express = require('express')
-// calling express 
 const app = express()
-// import fs to read file
 const fs = require('fs')
-// create middleware
-app.use(express.json())
 
+// Step 3a: Create a var that reads the file
 const tours = JSON.parse(fs.readFileSync(`${__dirname}/dev-data/data/tours-simple.json`))
 
-// We specify what happens after get request through a call back function (our second arg)
-// GET method
-app.get('/tours', (req, res) => {
-   res.status(200).json({tours})
-})
+// Step 3: Create routes and route handlers
+// GET method route handler
+const getAllRoutes = (req, res) => {
+   res.status(200).json({
+      status: 'success', data: { tours }
+   })
+}
 
-// GET specific
-app.get('/tours/:id', (req, res) => {
-   console.log(req.params)
-   // Convert id param into a number
+// GET with params
+const getTour = (req, res) => {
    const id = req.params.id * 1
+   if (id > tours.length) {
+      return res.status(404).json({
+         status: 'Fail',
+         message: 'Not found'
+      })
+   }
    const tour = tours.find(el => el.id === id)
 
-   res.status(200).json({ tour })
-})
+   res.status(200).json({status: 'success', data: {
+      tour
+   }})
+}
 
-// POST request
-app.post('/tours', (req, res) => {
-   // create an id to add after the last one
-   const newId = tours[tours.length - 1].id + 1
-   // Object.assign
-   const newTour = Object.assign({id: newId}, req.body)
-   // Add to the end of the array
-   tours.push(newTour)
 
-   // Final step to write in the file to persist
-   fs.writeFile(`${__dirname}/dev-data/data/tours-simple.json`,
-    JSON.stringify(tours),
-    err => {
-      res.status(201).json({ newTour })
-   })
-})
+// Routes
+app.get('/tours', getAllRoutes)
+app.get('/tours/:id', getTour )
 
-// pass in the port and a callback function
+
+// Step 2: Set up/Create/Start Server
 const port = 3000
 app.listen(port, () => {
-   console.log(`App running on ${port}...`)
-}) 
+   console.log(`Running on port ${port}...`)
+})
